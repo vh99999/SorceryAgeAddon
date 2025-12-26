@@ -1,0 +1,16 @@
+{
+  "ability.jujutsu_kaisen.auto_consume": "Auto Consume",
+  "ability.jujutsu_kaisen.auto_consume.enable": "Auto Consume enabled",
+  "ability.jujutsu_kaisen.auto_consume.disable": "Auto Consume disabled",
+
+  "ability.jujutsu_kaise.auto_consume.enable": "Auto Consume enabled",
+  "ability.jujutsu_kaise.auto_consume.disable": "Auto Consume disabled",
+
+  "ability.sorceryageaddon.auto_consume": "Auto Consume",
+  "ability.sorceryageaddon.auto_consume.enable": "Auto Consume enabled",
+  "ability.sorceryageaddon.auto_consume.disable": "Auto Consume disabled",
+
+  "ability,jujutsu_kaisen.auto_consume": "Auto Consume",
+  "ability.auto_consume": "Auto Consume"
+}
+
