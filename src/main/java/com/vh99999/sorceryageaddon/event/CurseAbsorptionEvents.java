@@ -1,6 +1,8 @@
 package com.vh99999.sorceryageaddon.event;
 
 import com.vh99999.sorceryageaddon.SorceryAgeAddon;
+import com.vh99999.sorceryageaddon.registry.AddonAbilities;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -21,6 +23,8 @@ import radon.jujutsu_kaisen.capability.data.sorcerer.Trait;
 import radon.jujutsu_kaisen.entity.base.ISorcerer;
 import radon.jujutsu_kaisen.item.CursedSpiritOrbItem;
 import radon.jujutsu_kaisen.item.JJKItems;
+import radon.jujutsu_kaisen.network.PacketHandler;
+import radon.jujutsu_kaisen.network.packet.s2c.SyncSorcererDataS2CPacket;
 import radon.jujutsu_kaisen.util.EntityUtil;
 import radon.jujutsu_kaisen.util.HelperMethods;
 
@@ -38,10 +42,8 @@ public class CurseAbsorptionEvents {
     }
 
     private static void check(LivingEntity victim, DamageSource source) {
-        if (victim.level().isClientSide) return;
+        if (victim.level().isClientSide || victim.isRemoved()) return;
         if (!victim.level().getGameRules().getBoolean(SorceryAgeAddon.GETO_SPIRITS_CAN_ABSORB)) return;
-        
-        if (!HelperMethods.isMelee(source)) return;
 
         if (!(source.getEntity() instanceof LivingEntity attacker)) return;
         
@@ -59,24 +61,37 @@ public class CurseAbsorptionEvents {
         if (!JJKAbilities.hasToggled(owner, JJKAbilities.CURSE_ABSORPTION.get())) return;
 
         ISorcererData victimCap = victim.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
+        ISorcererData ownerCap = owner.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
 
-        attacker.swing(InteractionHand.MAIN_HAND, true);
-
-        ItemStack stack = new ItemStack(JJKItems.CURSED_SPIRIT_ORB.get());
-
-        if (victim instanceof Player player) {
-            CursedSpiritOrbItem.setAbsorbed(stack, new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT(), player.getGameProfile()));
-        } else {
-            CursedSpiritOrbItem.setAbsorbed(stack, new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT()));
+        if (HelperMethods.isMelee(source)) {
+            attacker.swing(InteractionHand.MAIN_HAND, true);
         }
 
-        if (owner instanceof Player player) {
-            if (!player.addItem(stack)) {
-                player.drop(stack, false);
+        AbsorbedCurse absorbedCurse;
+        if (victim instanceof Player player) {
+            absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT(), player.getGameProfile());
+        } else {
+            absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT());
+        }
+
+        if (JJKAbilities.hasToggled(owner, AddonAbilities.AUTO_CONSUME.get())) {
+            ownerCap.addCurse(absorbedCurse);
+            if (owner instanceof ServerPlayer serverPlayer) {
+                PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(ownerCap.serializeNBT()), serverPlayer);
             }
         } else {
-            owner.setItemSlot(EquipmentSlot.MAINHAND, stack);
+            ItemStack stack = new ItemStack(JJKItems.CURSED_SPIRIT_ORB.get());
+            CursedSpiritOrbItem.setAbsorbed(stack, absorbedCurse);
+
+            if (owner instanceof Player player) {
+                if (!player.addItem(stack)) {
+                    player.drop(stack, false);
+                }
+            } else {
+                owner.setItemSlot(EquipmentSlot.MAINHAND, stack);
+            }
         }
+
         EntityUtil.makePoofParticles(victim);
 
         if (!(victim instanceof Player)) {

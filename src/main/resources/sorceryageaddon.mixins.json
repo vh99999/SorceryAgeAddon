@@ -3,6 +3,7 @@
   "package": "com.vh99999.sorceryageaddon.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "CurseAbsorptionMixin"
   ],
   "client": [],
   "server": []

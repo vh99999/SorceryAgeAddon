@@ -1,6 +1,7 @@
 package com.vh99999.sorceryageaddon;
 
 import com.mojang.logging.LogUtils;
+import com.vh99999.sorceryageaddon.registry.AddonAbilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameRules;
@@ -39,6 +40,8 @@ public class SorceryAgeAddon {
 
     public SorceryAgeAddon() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        AddonAbilities.register();
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
