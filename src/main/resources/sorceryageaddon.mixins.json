@@ -6,7 +6,8 @@
   "mixins": [
     "AbilityMixin",
     "CurseAbsorptionMixin",
-    "SorcererDataMixin"
+    "SorcererDataMixin",
+    "SorcererDataHandlerMixin"
   ],
   "client": [
     "BindingVowListWidgetEntryMixin",
