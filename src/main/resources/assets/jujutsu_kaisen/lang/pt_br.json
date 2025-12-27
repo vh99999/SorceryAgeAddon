@@ -6,6 +6,7 @@
   "binding_vow.jujutsu_kaisen.damage_transfer.description": "Todo o dano que você recebe enquanto estiver ativo transfere o dano para a maldição ativa mais fraca que você tem, mas em troca, você está limitado a ataques físicos.",
   "gui.sorceryageaddon.binding_vow.disabled_by_config": "§cDesativado pela configuração do servidor",
   "gamerule.getoSpiritsCanAbsorb": "Espíritos do Geto Podem Absorver",
-  "gamerule.getoDmgTransfer": "Transferência de Dano do Geto"
+  "gamerule.getoDmgTransfer": "Transferência de Dano do Geto",
+  "gamerule.getoAutoAbsorb": "Consumo Automático do Geto"
 }
 

@@ -6,6 +6,7 @@
   "binding_vow.jujutsu_kaisen.damage_transfer.description": "All the damage you take while this is active transfers the damage to the weakest curse active you have, but in exchange, you are limited to physical attacks.",
   "gui.sorceryageaddon.binding_vow.disabled_by_config": "§cDisabled by server config",
   "gamerule.getoSpiritsCanAbsorb": "Geto Spirits Can Absorb",
-  "gamerule.getoDmgTransfer": "Geto Damage Transfer"
+  "gamerule.getoDmgTransfer": "Geto Damage Transfer",
+  "gamerule.getoAutoAbsorb": "Geto Auto Absorb"
 }
 

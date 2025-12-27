@@ -43,7 +43,7 @@ public class SorceryAgeAddon {
 
     // Gamerule para ativar Damage Transfer binding vow
     public static final GameRules.Key<GameRules.BooleanValue> GETO_DMG_TRANSFER = GameRules.register("getoDmgTransfer",
-            GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (server, value) -> syncRules(server)));
+            GameRules.Category.MOBS, GameRules.BooleanValue.create(false, (server, value) -> syncRules(server)));
 
     private static void syncRules(net.minecraft.server.MinecraftServer server) {
         AddonPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
