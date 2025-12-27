@@ -13,22 +13,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
 import radon.jujutsu_kaisen.ability.curse_manipulation.CurseAbsorption;
 import radon.jujutsu_kaisen.capability.data.sorcerer.AbsorbedCurse;
+import radon.jujutsu_kaisen.capability.data.sorcerer.CursedTechnique;
 import radon.jujutsu_kaisen.capability.data.sorcerer.ISorcererData;
 import radon.jujutsu_kaisen.capability.data.sorcerer.SorcererDataHandler;
 import radon.jujutsu_kaisen.network.PacketHandler;
 import radon.jujutsu_kaisen.network.packet.s2c.SyncSorcererDataS2CPacket;
 import radon.jujutsu_kaisen.util.EntityUtil;
 
-@Mixin(value = CurseAbsorption.class, remap = false)
+@Mixin(value = CurseAbsorption.class)
 public abstract class CurseAbsorptionMixin {
 
-    @Inject(method = "check", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;<init>(Lnet/minecraft/world/level/ItemLike;)V"), cancellable = true)
+    @Inject(method = "check", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;<init>(Lnet/minecraft/world/level/ItemLike;)V"), cancellable = true, remap = false)
     private static void autoConsumeCheck(LivingEntity victim, DamageSource source, CallbackInfo ci) {
         if (!(source.getEntity() instanceof LivingEntity attacker)) return;
         
         if (JJKAbilities.hasToggled(attacker, AddonAbilities.AUTO_CONSUME.get())) {
-            ISorcererData victimCap = victim.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
             ISorcererData attackerCap = attacker.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
+            if (!attackerCap.hasTechnique(CursedTechnique.CURSE_MANIPULATION)) return;
+
+            ISorcererData victimCap = victim.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
 
             attacker.swing(InteractionHand.MAIN_HAND, true);
 

@@ -2,15 +2,10 @@
   "ability.jujutsu_kaisen.auto_consume": "Consumo Automático",
   "ability.jujutsu_kaisen.auto_consume.enable": "Consumo Automático ativado",
   "ability.jujutsu_kaisen.auto_consume.disable": "Consumo Automático desativado",
-
-  "ability.jujutsu_kaise.auto_consume.enable": "Consumo Automático ativado",
-  "ability.jujutsu_kaise.auto_consume.disable": "Consumo Automático desativado",
-
-  "ability.sorceryageaddon.auto_consume": "Consumo Automático",
-  "ability.sorceryageaddon.auto_consume.enable": "Consumo Automático ativado",
-  "ability.sorceryageaddon.auto_consume.disable": "Consumo Automático desativado",
-
-  "ability,jujutsu_kaisen.auto_consume": "Consumo Automático",
-  "ability.auto_consume": "Consumo Automático"
+  "binding_vow.jujutsu_kaisen.damage_transfer": "Transferência de Dano",
+  "binding_vow.jujutsu_kaisen.damage_transfer.description": "Todo o dano que você recebe enquanto estiver ativo transfere o dano para a maldição ativa mais fraca que você tem, mas em troca, você está limitado a ataques físicos.",
+  "gui.sorceryageaddon.binding_vow.disabled_by_config": "§cDesativado pela configuração do servidor",
+  "gamerule.getoSpiritsCanAbsorb": "Espíritos do Geto Podem Absorver",
+  "gamerule.getoDmgTransfer": "Transferência de Dano do Geto"
 }
 

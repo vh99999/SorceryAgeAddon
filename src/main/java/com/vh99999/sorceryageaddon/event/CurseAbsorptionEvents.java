@@ -15,11 +15,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
-import radon.jujutsu_kaisen.capability.data.sorcerer.AbsorbedCurse;
-import radon.jujutsu_kaisen.capability.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.capability.data.sorcerer.JujutsuType;
-import radon.jujutsu_kaisen.capability.data.sorcerer.SorcererDataHandler;
-import radon.jujutsu_kaisen.capability.data.sorcerer.Trait;
+import radon.jujutsu_kaisen.capability.data.sorcerer.*;
 import radon.jujutsu_kaisen.entity.base.ISorcerer;
 import radon.jujutsu_kaisen.item.CursedSpiritOrbItem;
 import radon.jujutsu_kaisen.item.JJKItems;
@@ -42,65 +38,68 @@ public class CurseAbsorptionEvents {
     }
 
     private static void check(LivingEntity victim, DamageSource source) {
-        if (victim.level().isClientSide || victim.isRemoved()) return;
+        if (victim.level().isClientSide || victim.isRemoved() || !victim.isAlive()) return;
         if (!victim.level().getGameRules().getBoolean(SorceryAgeAddon.GETO_SPIRITS_CAN_ABSORB)) return;
 
         if (!(source.getEntity() instanceof LivingEntity attacker)) return;
         
-        LivingEntity owner = null;
+        LivingEntity ownerTemp = null;
         if (attacker instanceof TamableAnimal tamable && attacker instanceof ISorcerer sorcerer) {
             if (sorcerer.getJujutsuType() == JujutsuType.CURSE) {
-                owner = tamable.getOwner();
+                ownerTemp = tamable.getOwner();
             }
         }
         
-        if (owner == null) return;
+        if (ownerTemp == null) return;
+        final LivingEntity owner = ownerTemp;
+        final LivingEntity finalAttacker = attacker;
 
         if (!canAbsorb(owner, victim)) return;
 
         if (!JJKAbilities.hasToggled(owner, JJKAbilities.CURSE_ABSORPTION.get())) return;
 
-        ISorcererData victimCap = victim.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
-        ISorcererData ownerCap = owner.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
-
-        if (HelperMethods.isMelee(source)) {
-            attacker.swing(InteractionHand.MAIN_HAND, true);
-        }
-
-        AbsorbedCurse absorbedCurse;
-        if (victim instanceof Player player) {
-            absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT(), player.getGameProfile());
-        } else {
-            absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT());
-        }
-
-        if (JJKAbilities.hasToggled(owner, AddonAbilities.AUTO_CONSUME.get())) {
-            ownerCap.addCurse(absorbedCurse);
-            if (owner instanceof ServerPlayer serverPlayer) {
-                PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(ownerCap.serializeNBT()), serverPlayer);
-            }
-        } else {
-            ItemStack stack = new ItemStack(JJKItems.CURSED_SPIRIT_ORB.get());
-            CursedSpiritOrbItem.setAbsorbed(stack, absorbedCurse);
-
-            if (owner instanceof Player player) {
-                if (!player.addItem(stack)) {
-                    player.drop(stack, false);
+        victim.getCapability(SorcererDataHandler.INSTANCE).ifPresent(victimCap -> {
+            owner.getCapability(SorcererDataHandler.INSTANCE).ifPresent(ownerCap -> {
+                if (HelperMethods.isMelee(source)) {
+                    finalAttacker.swing(InteractionHand.MAIN_HAND, true);
                 }
-            } else {
-                owner.setItemSlot(EquipmentSlot.MAINHAND, stack);
-            }
-        }
 
-        EntityUtil.makePoofParticles(victim);
+                AbsorbedCurse absorbedCurse;
+                if (victim instanceof Player player) {
+                    absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT(), player.getGameProfile());
+                } else {
+                    absorbedCurse = new AbsorbedCurse(victim.getName(), victim.getType(), victimCap.serializeNBT());
+                }
 
-        if (!(victim instanceof Player)) {
-            victim.discard();
-        } else {
-            if (!victim.isDeadOrDying()) {
-                victim.kill();
-            }
-        }
+                if (JJKAbilities.hasToggled(owner, AddonAbilities.AUTO_CONSUME.get())) {
+                    ownerCap.addCurse(absorbedCurse);
+                    if (owner instanceof ServerPlayer serverPlayer) {
+                        PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(ownerCap.serializeNBT()), serverPlayer);
+                    }
+                } else {
+                    ItemStack stack = new ItemStack(JJKItems.CURSED_SPIRIT_ORB.get());
+                    CursedSpiritOrbItem.setAbsorbed(stack, absorbedCurse);
+
+                    if (owner instanceof Player player) {
+                        if (!player.addItem(stack)) {
+                            player.drop(stack, false);
+                        }
+                    } else {
+                        owner.setItemSlot(EquipmentSlot.MAINHAND, stack);
+                    }
+                }
+
+                EntityUtil.makePoofParticles(victim);
+
+                if (!(victim instanceof Player)) {
+                    victim.discard();
+                } else {
+                    if (!victim.isDeadOrDying()) {
+                        victim.kill();
+                    }
+                }
+            });
+        });
     }
 
     private static boolean canAbsorb(LivingEntity owner, LivingEntity target) {
@@ -109,6 +108,8 @@ public class CurseAbsorptionEvents {
 
         ISorcererData ownerCap = owner.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
         ISorcererData targetCap = target.getCapability(SorcererDataHandler.INSTANCE).resolve().orElseThrow();
+
+        if (!ownerCap.hasTechnique(CursedTechnique.CURSE_MANIPULATION)) return false;
 
         return (targetCap.getType() == JujutsuType.CURSE && !targetCap.hasTrait(Trait.DEATH_PAINTING) && (!(target instanceof TamableAnimal tamable) || !tamable.isTame())) &&
                 (ownerCap.getExperience() / targetCap.getExperience() >= 2 || target.isDeadOrDying());
